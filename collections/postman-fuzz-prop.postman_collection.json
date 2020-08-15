@@ -1,0 +1,146 @@
+{
+	"info": {
+		"_postman_id": "14ef0a4a-21a3-433f-abbd-2f25db6623c6",
+		"name": "postman-fuzz-prop",
+		"description": "A generic fuzzing postman collection for experimentation and usage in API testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Generic POST",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "9c5bd4af-815d-4484-b799-ea411514ebe3",
+						"exec": [
+							"//https://learning.postman.com/docs/writing-scripts/script-references/variables-list/",
+							"",
+							"// Using built in postman dynamic vars",
+							"pm.environment.set('param', pm.variables.replaceIn('{{$randomFirstName}}'));",
+							"pm.environment.set('paramValue', pm.variables.replaceIn('{{$randomEmail}}'));",
+							"",
+							"// Using Lodash to sample from Array",
+							"const randomAuthHeaders = [",
+							"   'Authorization',",
+							"   'Proxy-Authorization',",
+							"   'X-Password'",
+							"];",
+							"",
+							"// Sample random element from above array",
+							"const randomAuthElement = _.sample(randomAuthHeaders);",
+							"",
+							"pm.environment.set('randomHeaderKey', randomAuthElement);",
+							"pm.environment.set('randomHeaderValue', pm.variables.replaceIn('{{$randomPassword}}'));",
+							"",
+							"// Load data from bad list of strings in a CSV format then get",
+							"pm.environment.set('badStringHehe',pm.iterationData.get(\"item\"));"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "bf2af9c9-15fb-43a7-84b8-f16bae19949b",
+						"exec": [
+							"pm.test(\"Password sent is password returned\", () => {",
+							"",
+							"    const randomHeaderKey = pm.environment.get('randomHeaderKey');",
+							"    const randomHeaderValue = pm.environment.get('randomHeaderValue');",
+							"",
+							"    pm.expect(pm.response.text()).to.include(`${randomHeaderValue}`);",
+							"});",
+							"",
+							"",
+							"pm.test(\"Response time < 20ms\", () => {",
+							"    pm.expect(pm.response.responseTime).to.be.below(100);",
+							"});",
+							"",
+							"",
+							"//   pm.expect(jsonData).to.be.an(\"object\");",
+							"//   pm.expect(jsonData.name).to.be.a(\"string\");",
+							"//   pm.expect(jsonData.age).to.be.a(\"number\");",
+							"//   pm.expect(jsonData.hobbies).to.be.an(\"array\");",
+							"//   pm.expect(jsonData.website).to.be.undefined;",
+							"//   pm.expect(jsonData.email).to.be.null;",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "{{randomHeaderKey}}",
+						"value": "{{randomHeaderValue}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"price\": \"{{$randomPrice}}\",\n    \"junk\": \"{{badStringHehe}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}?{{param}}={{paramValue}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"query": [
+						{
+							"key": "{{param}}",
+							"value": "{{paramValue}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "28af1ca7-65cc-4c81-a794-7823c870c3ff",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "7a0c348c-4079-4a94-ad05-c331cd147beb",
+				"type": "text/javascript",
+				"exec": [
+					"// For all your date and time requirements",
+					"const moment = require('moment');",
+					"",
+					"// Build our generic request object stats for each request made",
+					"const r = {",
+					"    name: pm.info.requestName,",
+					"    time: moment(),",
+					"    eventName: pm.info.eventName,",
+					"    iteration: `${pm.info.iteration} of ${pm.info.iterationCount}`,",
+					"};",
+					"",
+					"console.log(r, null, 2);"
+				]
+			}
+		}
+	],
+	"protocolProfileBehavior": {}
+}
